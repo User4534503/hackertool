@@ -153,21 +153,31 @@ def loadHackingTerminal():
     sys.stderr = ColourWriter(sys.stderr)
 
     def coloured_input(prompt):
+        # write prompt & flush so it actually appears
         sys.stdout.write(colour_state['code'] + prompt)
+        sys.stdout.flush()
+
         buffer = ''
         while True:
-            ch = msvcrt.getwch()
+            ch = msvcrt.getwch()  # gets a str
             if ch == '\r':  # Enter
                 sys.stdout.write('\n')
+                sys.stdout.flush()
                 break
+
             elif ch == '\x08':  # Backspace
                 if buffer:
                     buffer = buffer[:-1]
-                    # move cursor back, overwrite, move back
+                    # move cursor back, overwrite with space, move back
                     sys.stdout.write('\b \b')
+                    sys.stdout.flush()
+
             else:
                 buffer += ch
+                # echo the character in the current colour, then flush
                 sys.stdout.write(colour_state['code'] + ch)
+                sys.stdout.flush()
+
         return buffer.strip()
 
     def ensure_home():
