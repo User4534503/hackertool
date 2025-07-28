@@ -32,6 +32,7 @@
 ### 📝 Usage
 
 1. **Run the compiled EXE**
+
    Unfortunately, running the uncompiled script will not work due to the auto-updating system.
    The script prompts for a password (`hack1ng`) before proceeding.
 
