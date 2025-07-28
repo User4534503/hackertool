@@ -1,5 +1,3 @@
-# HackerTool
-
 import os
 import sys
 import time
@@ -46,6 +44,56 @@ def print_main():
 |_| |_|\__,_|\___|_|\_\___|_|   |_|\___/ \___/|_|
     """ + Style.RESET_ALL)
 
+def arrow_menu(options):
+    # Hide the cursor
+    sys.stdout.write("\x1b[?25l")
+    sys.stdout.flush()
+
+    # Print the header and the initial menu
+    print_main()
+    for i, option in enumerate(options):
+        prefix = "➤ " if i == 0 else "  "
+        colour = Fore.YELLOW if i == 0 else Fore.WHITE
+        print(f"{Fore.GREEN if i == 0 else ''}{prefix}{colour}{option}{Style.RESET_ALL}")
+
+    index = 0
+    # How many lines we need to move up to overwrite our menu:
+    menu_height = len(options)
+
+    try:
+        while True:
+            key = msvcrt.getch()
+            if key == b'\xe0':        # Arrow keys prefix
+                key2 = msvcrt.getch()
+                if key2 == b'H':       # Up
+                    index = (index - 1) % len(options)
+                elif key2 == b'P':     # Down
+                    index = (index + 1) % len(options)
+                else:
+                    continue
+            elif key == b'\r':        # Enter
+                break
+            else:
+                continue
+
+            # Move cursor up to the first menu line
+            sys.stdout.write(f"\x1b[{menu_height}A")
+            # Re‑print the menu with the new selection
+            for i, option in enumerate(options):
+                prefix = "➤ " if i == index else "  "
+                colour = Fore.YELLOW if i == index else Fore.WHITE
+                sys.stdout.write(f"\r")  # return to start of line
+                sys.stdout.write(" " * 80)  # clear old text (assumes max width <80)
+                sys.stdout.write("\r")  # back again
+                sys.stdout.write(f"{Fore.GREEN if i == index else ''}{prefix}{colour}{option}{Style.RESET_ALL}\n")
+            sys.stdout.flush()
+    finally:
+        # Show the cursor again
+        sys.stdout.write("\x1b[?25h")
+        sys.stdout.flush()
+
+    return index
+
 def auto_update():
     """
     Downloads the latest hackertool.exe from the GitHub Releases API,
@@ -65,7 +113,7 @@ def auto_update():
     assets = release_info.get("assets", [])
     exe_asset = next((a for a in assets if a.get("name") == "hackertool.exe"), None)
     if not exe_asset:
-        print("⚠️ Error Updating!")
+        print("⚠️ There was an error while updating!")
         return
 
     download_url = exe_asset["browser_download_url"]
@@ -110,8 +158,6 @@ del "%~f0"
     else:
         # 🚀 Already up to date
         os.remove(tmp_path)
-
-
 
 # ========= Hacking Terminal =========
 def loadHackingTerminal():
@@ -268,34 +314,28 @@ def loadHackingTerminal():
         sys.stdout.write(f"{cmd}: command not found\n")
 
 
-
 # === Program start ===
 clear_terminal()
 passw = input_password()
 
 if passw == "hack1ng":
-    auto_update()
+    # auto_update()
+    print("")
 else:
     sys.exit()
 
 # === Main menu ===
 while True:
-    print_main()
-    print("1) Install apps\n2) UEN v1\n3) Hacking Terminal\n4) Quit\n")
+    choice = arrow_menu([
+        "Install apps",
+        "UEN v1",
+        "Hacking Terminal",
+        "Quit"
+    ])
 
-    choice = input("What would you like to do: ")
-    while choice not in ["1", "2", "3", "4"]:
-        choice = input("What would you like to do: ")
-
-    print_main()
-
-    if choice == "1":
-        print("1) Install Java 21\n2) Back\n")
-        sub = input("What would you like to do: ")
-        while sub not in ["1", "2"]:
-            sub = input("What would you like to do: ")
-
-        if sub == "1":
+    if choice == 0:
+        sub = arrow_menu(["Install Java 21", "Back"] )
+        if sub == 0:
             # Java installer logic
             user_profile = os.environ['USERPROFILE']
             install_dir = os.path.join(user_profile, 'Java21')
@@ -329,19 +369,19 @@ while True:
                 print(f"⚠️ Failed to update PATH: {e}")
             time.sleep(3)
 
-    elif choice == "2":
+    elif choice == 1:
         print_main()
         print("UEN is coming soon...")
         time.sleep(3)
 
-    elif choice == "3":
+    elif choice == 2:
         print_main()
         print("Loading Hacking Terminal...")
         time.sleep(2)
         loadHackingTerminal()
         time.sleep(3)
 
-    elif choice == "4":
+    elif choice == 3:
         print_main()
         print("Closing HackerTool...")
         time.sleep(2)
