@@ -319,7 +319,7 @@ clear_terminal()
 passw = input_password()
 
 if passw == "hack1ng":
-    # auto_update()
+    auto_update()
     print("")
 else:
     sys.exit()
