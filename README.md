@@ -90,7 +90,7 @@ C:\Users\<user>\
 
 ---
 
-## ⚠️ Notes
+## ⚠️ Warning
 
 - This is Windows-only due to `msvcrt`, `winreg`, and `ctypes.windll` usage
 
@@ -98,5 +98,4 @@ C:\Users\<user>\
 
 ## 🙋 Author
 
-Developed by [SuperGamer474](https://supergamer474.rf.gd)
-Also known as [User4534503](https://github.com/User4534503)
+Developed by [SuperGamer474](https://supergamer474.rf.gd), also known as [User4534503](https://github.com/User4534503)
