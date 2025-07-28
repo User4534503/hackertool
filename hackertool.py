@@ -39,8 +39,7 @@ def input_password(prompt="Please enter the password: "):
 
 def print_main():
     clear_terminal()
-    print(Fore.GREEN + r"""
- _   _            _            _____           _ 
+    print(Fore.GREEN + r""" _   _            _            _____           _ 
 | | | | __ _  ___| | _____ _ _|_   _|__   ___ | |
 | |_| |/ _` |/ __| |/ / _ \ '__|| |/ _ \ / _ \| |
 |  _  | (_| | (__|   <  __/ |   | | (_) | (_) | |
@@ -279,7 +278,6 @@ passw = input_password()
 
 if passw == "hack1ng":
     auto_update()
-    print("")
 else:
     sys.exit()
 
