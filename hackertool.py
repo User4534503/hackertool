@@ -65,7 +65,7 @@ def auto_update():
     assets = release_info.get("assets", [])
     exe_asset = next((a for a in assets if a.get("name") == "hackertool.exe"), None)
     if not exe_asset:
-        print("⚠️ Couldn't find hackertool.exe in the latest release!")
+        print("⚠️ Error Updating!")
         return
 
     download_url = exe_asset["browser_download_url"]
@@ -74,7 +74,6 @@ def auto_update():
     local_exe = sys.executable  # current running .exe
     tmp_fd, tmp_path = tempfile.mkstemp(suffix=".exe", dir=os.path.dirname(local_exe))
     os.close(tmp_fd)
-    print("⬇️  Downloading latest version...")
     urllib.request.urlretrieve(download_url, tmp_path)
 
     # 4️⃣ Hash helper
@@ -87,7 +86,7 @@ def auto_update():
 
     # 5️⃣ Compare hashes
     if file_hash(tmp_path) != file_hash(local_exe):
-        print("✨ New version detected! Applying update... ✨")
+        print("✨ Installing new update... ✨")
         base_dir = os.path.dirname(local_exe)
         new_name = os.path.basename(tmp_path)
         old_name = os.path.basename(local_exe)
@@ -111,8 +110,6 @@ del "%~f0"
     else:
         # 🚀 Already up to date
         os.remove(tmp_path)
-        print("✅ HackerTool is up to date!")
-        time.sleep(1)
 
 
 
