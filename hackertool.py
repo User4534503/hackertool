@@ -7,6 +7,7 @@ import hashlib
 import tempfile
 import subprocess
 import urllib.request
+import json
 from colorama import init, Fore, Style
 import msvcrt
 import zipfile
@@ -39,28 +40,45 @@ def input_password(prompt="Please enter the password: "):
 def print_main():
     clear_terminal()
     print(Fore.GREEN + r"""
-     _   _            _            _____           _ 
-    | | | | __ _  ___| | _____ _ _|_   _|__   ___ | |
-    | |_| |/ _` |/ __| |/ / _ \ '__|| |/ _ \ / _ \| |
-    |  _  | (_| | (__|   <  __/ |   | | (_) | (_) | |
-    |_| |_|\__,_|\___|_|\_\___|_|   |_|\___/ \___/|_|
+ _   _            _            _____           _          _   ___  
+| | | | __ _  ___| | _____ _ _|_   _|__   ___ | |  __   _/ | / _ \ 
+| |_| |/ _` |/ __| |/ / _ \ '__|| |/ _ \ / _ \| |  \ \ / / || | | |
+|  _  | (_| | (__|   <  __/ |   | | (_) | (_) | |   \ V /| || |_| |
+|_| |_|\__,_|\___|_|\_\___|_|   |_|\___/ \___/|_|    \_/ |_(_)___/ 
     """ + Style.RESET_ALL)
 
 def auto_update():
     """
-    Downloads the latest hackertool.exe from GitHub,
+    Downloads the latest hackertool.exe from the GitHub Releases API,
     compares SHA256 hashes, and if different,
     swaps in the new version and restarts.
     """
-    remote_url  = "https://github.com/User4534503/hackertool/raw/refs/heads/main/hackertool.exe"
-    local_exe   = sys.executable  # current running .exe
+    # 1️⃣ Query the GitHub API for the latest release
+    api_url = "https://api.github.com/repos/User4534503/hackertool/releases/latest"
+    req = urllib.request.Request(api_url, headers={
+        "User-Agent": "HackerTool-Updater",
+        "Accept": "application/vnd.github.v3+json"
+    })
+    with urllib.request.urlopen(req) as resp:
+        release_info = json.load(resp)
 
-    # 1️⃣ Download remote exe to temp file
+    # 2️⃣ Find the hackertool.exe asset
+    assets = release_info.get("assets", [])
+    exe_asset = next((a for a in assets if a.get("name") == "hackertool.exe"), None)
+    if not exe_asset:
+        print("⚠️ Couldn't find hackertool.exe in the latest release!")
+        return
+
+    download_url = exe_asset["browser_download_url"]
+
+    # 3️⃣ Download remote EXE to a temp file
+    local_exe = sys.executable  # current running .exe
     tmp_fd, tmp_path = tempfile.mkstemp(suffix=".exe", dir=os.path.dirname(local_exe))
     os.close(tmp_fd)
-    urllib.request.urlretrieve(remote_url, tmp_path)
+    print("⬇️  Downloading latest version...")
+    urllib.request.urlretrieve(download_url, tmp_path)
 
-    # 2️⃣ Hash helper
+    # 4️⃣ Hash helper
     def file_hash(path):
         h = hashlib.sha256()
         with open(path, "rb") as f:
@@ -68,7 +86,7 @@ def auto_update():
                 h.update(chunk)
         return h.hexdigest()
 
-    # 3️⃣ Compare
+    # 5️⃣ Compare hashes
     if file_hash(tmp_path) != file_hash(local_exe):
         print("✨ New version detected! Applying update... ✨")
         base_dir = os.path.dirname(local_exe)
@@ -76,7 +94,7 @@ def auto_update():
         old_name = os.path.basename(local_exe)
         bat_path = os.path.join(base_dir, "update.bat")
 
-        # 4️⃣ Write batch script to swap and restart
+        # 6️⃣ Write batch script to swap and restart
         bat_content = f"""
 @echo off
 timeout /t 2 /nobreak >nul
@@ -88,11 +106,11 @@ del "%~f0"
         with open(bat_path, "w") as bat:
             bat.write(bat_content.strip())
 
-        # 5️⃣ Launch the updater and exit
+        # 7️⃣ Launch the updater and exit
         subprocess.Popen(["cmd", "/c", bat_path], cwd=base_dir)
         sys.exit()
     else:
-        # Up to date
+        # 🚀 Already up to date
         os.remove(tmp_path)
         print("✅ HackerTool is up to date!")
         time.sleep(1)
@@ -250,7 +268,7 @@ clear_terminal()
 passw = input_password()
 
 if passw == "hack1ng":
-    # auto_update()  # ← Uncomment to auto-update
+    auto_update()
     print("")
 else:
     sys.exit()
