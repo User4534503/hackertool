@@ -11,7 +11,7 @@
 - 🔄 **Auto-Updater** that checks for the latest executable via GitHub  
 - 💻 **Custom Command-Line Shell** (`Hacking Terminal`) with:
   - Windows-style prompt
-  - Built-in `cd`, `mkdir`, and `colour` commands
+  - Built-in `cd`, `mkdir`, `scan`, and `colour` commands
   - Command output with dynamic ANSI color wrapping
 - ☕ **Java 21 Installer** with PATH auto-updating  
 
@@ -51,6 +51,8 @@
 
 - `cd [dir]` — Change directory (only within `~/hacking-terminal`)
 - `mkdir <name>` — Make a new directory
+- `scan <name>` — Scans your local network for devices whose hostnames contain `<name>`.
+  Uses multi-threaded ping sweeps and reverse DNS lookups to find matching devices on your subnet.  
 - `colour <name>` — Change prompt/output color  
   Available colors: `red`, `orange`, `yellow`, `green`, `blue`, `purple`, `pink`, `white`, `black`, `grey`, `default`
 - `exit` / `quit` — Exit terminal
