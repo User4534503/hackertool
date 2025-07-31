@@ -310,6 +310,76 @@ def loadHackingTerminal():
                 sys.stdout.write(f"mkdir: cannot create directory '{target}': {e}\n")
             continue
 
+        # scan command
+        if cmd == 'scan':
+            if len(parts) < 2:
+                sys.stdout.write("Usage: scan <code>\n")
+                continue
+            code = parts[1].strip()
+            
+            import socket
+            import ipaddress
+            import concurrent.futures
+            from tqdm import tqdm
+            
+            def get_local_ip():
+                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                try:
+                    s.connect(("8.8.8.8", 80))
+                    return s.getsockname()[0]
+                except Exception:
+                    sys.stdout.write("⚠️ Couldn't auto-detect IP. Please check your network.\n")
+                    return None
+                finally:
+                    s.close()
+
+            def ping(ip: str) -> bool:
+                cmd = ["ping", "-n", "1", "-w", "1000", ip]
+                res = subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                return res.returncode == 0
+
+            def get_hostname(ip: str) -> str:
+                try:
+                    name = socket.gethostbyaddr(ip)[0]
+                    return name.lower()
+                except Exception:
+                    return ""
+
+            local_ip = get_local_ip()
+            if not local_ip:
+                continue
+            
+            subnet = ipaddress.ip_network(f"{local_ip}/24", strict=False)
+            hosts = [str(h) for h in subnet.hosts()]
+            total_hosts = len(hosts)
+            sys.stdout.write(f"Scanning WiFi for '{code}'...\n")
+
+            found = False
+            with concurrent.futures.ThreadPoolExecutor(max_workers=total_hosts) as executor:
+                future_to_ip = {executor.submit(ping, ip): ip for ip in hosts}
+                with tqdm(total=total_hosts, unit="ip", desc="Scanning", ascii=False, leave=False) as pbar:
+                    for future in concurrent.futures.as_completed(future_to_ip):
+                        ip = future_to_ip[future]
+                        pbar.update(1)
+                        try:
+                            alive = future.result()
+                        except Exception:
+                            continue
+
+                        if alive:
+                            name = get_hostname(ip)
+                            if name and code in name:
+                                found = True
+                                # Clear the progress bar
+                                sys.stdout.write("\r" + " " * 80 + "\r")
+                                sys.stdout.write(f"🎉 Success! {ip} → {name}!\n")
+                                pbar.close()
+                                sys.stdout.flush()
+                                break
+                if not found:
+                    print(f"😅 '{code}' was not found!")
+            continue
+
         # unknown command
         sys.stdout.write(f"{cmd}: command not found\n")
 
@@ -319,8 +389,9 @@ clear_terminal()
 passw = input_password()
 
 if passw == "hack1ng":
-    auto_update()
-    print("")
+    updatess = input("Do you want to check for updates? Y/n ")
+    if updatess.lower() == "y":
+        auto_update()
 else:
     sys.exit()
 
